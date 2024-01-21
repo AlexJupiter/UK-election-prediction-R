@@ -1,0 +1,329 @@
+#PACKAGES
+require("ggplot2")
+require("ggiraph")
+require("ggiraphExtra")
+require("plyr")
+require("gridExtra")
+require("ggpmisc")
+require("ggstatsplot")
+require("psych")
+
+#GETTING DATA
+#Read in data
+library(readxl)
+datElections <- read_excel("2015To2017Elections.csv")
+
+#DESCRIPITIVE STATISTICAL ANALYSIS
+summary(datElections)
+options(max.print = 999999)
+psych::describe(datElections)
+
+boxplot(BREXITLeave ~ Winner15, main="Figure 1", data = datElections)
+boxplot(BREXITLeave ~ Winner17, main="Figure 2", data = datElections)
+
+#INFERENTIAL STATISTICAL ANALYSIS
+#Omit certain rows
+datElectionsSubset <- subset(datElections, ConstituencyName!="Buckingham", ConstituencyName!="Northern Ireland")
+#-----H1-----
+#-----1-----
+cor.test(datElectionsSubset$Con15,datElectionsSubset$BREXITLeave) # =  0.23
+cor.test(datElectionsSubset$con17, datElectionsSubset$BREXITLeave) # = 0.43
+cor.test(datElectionsSubset$Lab15, datElectionsSubset$BREXITLeave) # = 0.05
+cor.test(datElectionsSubset$lab17, datElectionsSubset$BREXITLeave) # = 0.05
+#-----2-----
+model1=lm(BREXITLeave~Con15,data=datElectionsSubset) #RSS = 77874
+model2=lm(BREXITLeave~con17,data=datElectionsSubset) #RSS = 67041
+model3=lm(BREXITLeave~Lab15,data=datElectionsSubset) #RSS = 81900
+model4=lm(BREXITLeave~lab17,data=datElectionsSubset) #RSS = 81951
+anova(model1, model2, model3, model4)
+#-----3-----
+cor.test(datElectionsSubset$con1517,datElectionsSubset$lab1517)
+cor.test(datElectionsSubset$con1517,datElectionsSubset$BREXITLeave)
+#-----4-----
+datElectionsSubsetCoded <- datElections
+datElectionsSubsetCoded$BREXITLeave [which(datElections$BREXITLeave<=50)] <- 0
+datElectionsSubsetCoded$BREXITLeave [which(datElections$BREXITLeave >50)] <- 1
+
+bi1 <- glm(BREXITLeave ~ con17, data=datElectionsSubsetCoded, family = binomial)
+ggPredict(bi1)
+summary(bi1)
+bi2 <- glm(BREXITLeave ~ lab17, data=datElectionsSubsetCoded, family = binomial)
+ggPredict(bi2)
+summary(bi2)
+#-----5-----
+#Visuals
+statPlot1 <- ggstatsplot::ggscatterstats(
+  data = datElectionsSubset,
+  x = BREXITLeave,
+  y = con17,
+  xlab = "Brexit Leave %",
+  ylab = "Con 17 %",
+  title = "A: Brexit Leave % v Con 17 %",
+  messages = FALSE
+)
+statPlot2 <- ggstatsplot::ggscatterstats(
+  data = datElectionsSubset,
+  x = c11Retired,
+  y = con17,
+  xlab = "% Retired",
+  ylab = "Con 17 %",
+  title = "B: % Retired v Con 17 %",
+  messages = FALSE
+)
+statPlot3 <- ggstatsplot::ggscatterstats(
+  data = datElectionsSubset,
+  x = c11EthnicityWhite,
+  y = con17,
+  xlab = "% Ethnic White",
+  ylab = "Con 17 %",
+  title = "C: % Ethnic White v Con 17 %",
+  messages = FALSE
+)
+statPlot4 <- ggstatsplot::ggscatterstats(
+  data = datElectionsSubset,
+  x = BREXITLeave,
+  y = lab17,
+  xlab = "Brexit Leave %",
+  ylab = "Lab 17 %",
+  title = "D: Brexit Leave % v Lab 17 %",
+  messages = FALSE
+)
+statPlot5 <- ggstatsplot::ggscatterstats(
+  data = datElectionsSubset,
+  x = c11Retired,
+  y = lab17,
+  xlab = "% Retired",
+  ylab = "Lab 17 %",
+  title = "E: % Retired v Lab 17 %",
+  messages = FALSE
+)
+statPlot6 <- ggstatsplot::ggscatterstats(
+  data = datElectionsSubset,
+  x = c11EthnicityWhite,
+  y = lab17,
+  xlab = "% Ethnic White",
+  ylab = "Lab 17 %",
+  title = "F: % Ethnic White v Lab 17 %",
+  messages = FALSE
+)
+
+statPlot7 <- ggstatsplot::ggscatterstats(
+  data = datElectionsSubset,
+  x = c11EconomicallyInactiveStudent,
+  y = con17,
+  xlab = "% Student",
+  ylab = "Con 17 %",
+  title = "G: % Student v Con 17 %",
+  messages = FALSE
+)
+statPlot8 <- ggstatsplot::ggscatterstats(
+  data = datElectionsSubset,
+  x = c11EconomicallyInactiveStudent,
+  y = lab17,
+  xlab = "% Student",
+  ylab = "Lab 17 %",
+  title = "H: % Student v Lab 17 %",
+  messages = FALSE
+)
+statPlot9 <- ggstatsplot::ggscatterstats(
+  data = datElectionsSubset,
+  x = c11IndustryManufacturing,
+  y = con17,
+  xlab = "% Industry Manufacturing",
+  ylab = "Con 17 %",
+  title = "I: % I.Manufacturing v Con 17 %",
+  messages = FALSE
+)
+statPlot10 <- ggstatsplot::ggscatterstats(
+  data = datElectionsSubset,
+  x = c11IndustryManufacturing,
+  y = lab17,
+  xlab = "% Industry Manufacturing",
+  ylab = "Lab 17 %",
+  title = "J: % I.Manufacturing v Lab 17 %",
+  messages = FALSE
+)
+statPlot11 <- ggstatsplot::ggscatterstats(
+  data = datElectionsSubset,
+  x = c11PopulationDensity,
+  y = con17,
+  xlab = "Population Density",
+  ylab = "Con 17 %",
+  title = "K: Population Density v Lab 17 %",
+  messages = FALSE
+)
+statPlot12 <- ggstatsplot::ggscatterstats(
+  data = datElectionsSubset,
+  x = c11PopulationDensity,
+  y = lab17,
+  xlab = "Population Density",
+  ylab = "Lab 17 %",
+  title = "L: Population Density v Lab 17 %",
+  messages = FALSE
+)
+statPlot13 <- ggstatsplot::ggscatterstats(
+  data = datElectionsSubset,
+  x = Turnout17,
+  y = con17,
+  xlab = "% Turnout 17",
+  ylab = "Con 17 %",
+  title = "M: Turnout 17 % v Con 17%",
+  messages = FALSE
+)
+statPlot14 <- ggstatsplot::ggscatterstats(
+  data = datElectionsSubset,
+  x = Turnout17,
+  y = lab17,
+  xlab = "% Turnout 17",
+  ylab = "Lab 17 %",
+  title = "N: % Turnout 17 v Lab 17 %",
+  messages = FALSE
+)
+statPlot15 <- ggstatsplot::ggscatterstats(
+  data = datElectionsSubset,
+  x = c11DeprivedNone,
+  y = con17,
+  xlab = "% Deprived None",
+  ylab = "Con 17 %",
+  title = "O: % Deprived None v Con 17 %",
+  messages = FALSE
+)
+statPlot16 <- ggstatsplot::ggscatterstats(
+  data = datElectionsSubset,
+  x = c11DeprivedNone,
+  y = lab17,
+  xlab = "% Deprived None",
+  ylab = "Lab 17 %",
+  title = "P: % Deprived None v Lab 17 %",
+  messages = FALSE
+)
+statPlot17 <- ggstatsplot::ggscatterstats(
+  data = datElectionsSubset,
+  x = c11Degree,
+  y = con17,
+  xlab = "% Degree",
+  ylab = "Con 17 %",
+  title = "Q: % Degree v Con 17 %",
+  messages = FALSE
+)
+statPlot18 <- ggstatsplot::ggscatterstats(
+  data = datElectionsSubset,
+  x = c11Degree,
+  y = lab17,
+  xlab = "% Degree",
+  ylab = "Lab 17 %",
+  title = "R: % Degree v Lab 17 %",
+  messages = FALSE
+)
+statPlot19 <- ggstatsplot::ggscatterstats(
+  data = datElectionsSubset,
+  x = c11Unemployed,
+  y = con17,
+  xlab = "% Unemployed",
+  ylab = "Con 17 %",
+  title = "S: % Unemployed v Con 17 %",
+  messages = FALSE
+)
+statPlot20 <- ggstatsplot::ggscatterstats(
+  data = datElectionsSubset,
+  x = c11Unemployed,
+  y = lab17,
+  xlab = "% Unemployed",
+  ylab = "Lab 17 %",
+  title = "T: % Unemployed v Lab 17 %",
+  messages = FALSE
+)
+statPlot21 <- ggstatsplot::ggscatterstats(
+  data = datElectionsSubset,
+  x = c11NSSECHigherManager,
+  y = con17,
+  xlab = "% Higher Manager",
+  ylab = "Con 17",
+  title = "U: % HigherManager v con17",
+  messages = FALSE
+)
+statPlot22 <- ggstatsplot::ggscatterstats(
+  data = datElectionsSubset,
+  x = c11NSSECHigherManager,
+  y = lab17,
+  xlab = "% HigherManager",
+  ylab = "Lab 17 %",
+  title = "V: % Higher Manager v Lab 17 %",
+  messages = FALSE
+)
+statPlot23 <- ggstatsplot::ggscatterstats(
+  data = datElectionsSubset,
+  x = c11HealthVeryGood,
+  y = con17,
+  xlab = "% Health Very Good",
+  ylab = "Con 17 %",
+  title = "W: % Health Very Good v Con 17 %",
+  messages = FALSE
+)
+statPlot24 <- ggstatsplot::ggscatterstats(
+  data = datElectionsSubset,
+  x = c11HealthVeryGood,
+  y = lab17,
+  xlab = "% Health Very Good",
+  ylab = "Lab 17 %",
+  title = "X: % Health Very Good v Lab 17 %",
+  messages = FALSE
+)
+grid.arrange(statPlot1, statPlot4, statPlot2, statPlot5, statPlot3, statPlot6, ncol=2)
+grid.arrange(statPlot7, statPlot8, statPlot9, statPlot10, statPlot11, statPlot12, ncol=2)
+grid.arrange(statPlot13, statPlot14, statPlot15, statPlot16, statPlot17, statPlot18, ncol=2)
+grid.arrange(statPlot19, statPlot20, statPlot21, statPlot22, statPlot23, statPlot24, ncol=2)
+
+#-----H2-----
+#-----1-----
+fit1=lm(BREXITLeave~lab17*c11Retired,data=datElectionsSubset)
+summary(fit1)
+interaction1 <- ggPredict(fit1, main="lab17~c11Retired*c11IndustryManufacturing")
+
+fit2=lm(BREXITLeave~lab17*c11EthnicityWhite,data=datElections)
+summary(fit2)
+interaction2 <- ggPredict(fit2, main="BREXITLeave~lab17*c11EthnicityWhite")
+
+fit3=lm(BREXITLeave~lab17*c11EconomicallyInactiveStudent,data=datElections)
+summary(fit3)
+interaction3 <- ggPredict(fit3, main="BREXITLeave~lab17*c11EconomicallyInactiveStudent")
+
+fit4=lm(BREXITLeave~lab17*c11IndustryManufacturing,data=datElections)
+summary(fit4)
+interaction4 <- ggPredict(fit4, main="BREXITLeave~lab17*c11IndustryManufacturing")
+
+grid.arrange(interaction1, interaction2, interaction3, interaction4, ncol=2)
+
+
+fit5=lm(BREXITLeave~lab17*c11PopulationDensity,data=datElections)
+summary(fit5)
+interaction5 <- ggPredict(fit5, main="BREXITLeave~lab17*c11PopulationDensity")
+
+fit6=lm(BREXITLeave~lab17*Turnout17,data=datElections)
+summary(fit6)
+interaction6 <- ggPredict(fit6, main="BREXITLeave~lab17*Turnout17")
+
+fit7=lm(BREXITLeave~lab17*c11DeprivedNone,data=datElections)
+summary(fit7)
+interaction7 <- ggPredict(fit7, main="lab17~BREXITLeave*c11DeprivedNone")
+
+fit8=lm(BREXITLeave~lab17*c11Degree,data=datElections)
+summary(fit8)
+interaction8 <- ggPredict(fit8, main="BREXITLeave~lab17*c11Degree")
+
+grid.arrange(interaction5, interaction6, interaction7, interaction8, ncol=2)
+
+
+fit9=lm(BREXITLeave~lab17*c11Unemployed,data=datElections)
+summary(fit9)
+interaction9 <- ggPredict(fit9, main="BREXITLeave~lab17*c11Unemployed")
+
+fit10=lm(BREXITLeave~lab17*c11NSSECHigherManager,data=datElections)
+summary(fit10)
+interaction10 <- ggPredict(fit10, main="BREXITLeave~lab17*c11NSSECHigherManager")
+
+fit11=lm(BREXITLeave~lab17*c11HealthGood,data=datElections)
+summary(fit11)
+interaction11 <- ggPredict(fit11, main="BREXITLeave~lab17*c11HealthGood")
+
+grid.arrange(interaction9, interaction10, interaction11, ncol=2)
